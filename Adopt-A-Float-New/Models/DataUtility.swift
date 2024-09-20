@@ -12,119 +12,174 @@ import CoreData
 
 
 struct DataUtility {
-    static let baseURL = "https://geoweb.princeton.edu/people/simons/SOM/N0001_all.txt"
+    
+    
+    static func getBaseURL() -> String? {
+         guard let path = Bundle.main.path(forResource: "source", ofType: "plist"),
+               let plistDict = NSDictionary(contentsOfFile: path),
+               let baseURL = plistDict["BaseURL"] as? String else {
+             print("Failed to load BaseURL from source.plist")
+             return nil
+         }
+         return baseURL
+     }
 
-    static func createInstruments() -> [Instrument] {
-        var instruments: [Instrument] = []
 
-        let instrumentName = "N0001"
-        let urlString = baseURL
+    // Create instruments by scanning the base URL directory
+        static func createInstruments() -> [Instrument] {
+            var instruments: [Instrument] = []
 
-        print("Constructed URL: \(urlString)")
-        if let url = URL(string: urlString) {
-            let instrumentData = fetchData(from: url)
-            let instrument = Instrument(name: instrumentName, floatData: instrumentData)
-            instruments.append(instrument)
-        } else {
-            print("Invalid URL: \(urlString)")
-        }
-
-        return instruments
-    }
-
-    static func fetchData(from url: URL) -> [FloatData] {
-        // Get the context
-        let context = PersistenceController.shared.container.viewContext
-
-        // Check if data already exists
-        let fetchRequest: NSFetchRequest<FloatDataEntity> = FloatDataEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "deviceName == %@", "N0001")
-
-        do {
-            let cachedData = try context.fetch(fetchRequest)
-            let shouldRefreshData: Bool
-
-            if let lastData = cachedData.last, let lastDate = lastData.dateTime {
-                // Determine if data is outdated (e.g., older than 1 day)
-                let timeSinceLastFetch = Date().timeIntervalSince(lastDate)
-                shouldRefreshData = timeSinceLastFetch > (24 * 60 * 60) // 1 day
-            } else {
-                shouldRefreshData = true
+            guard let baseURL = getBaseURL() else {
+                print("Base URL not found.")
+                return instruments
             }
 
-            if !cachedData.isEmpty && !shouldRefreshData {
-                print("Loaded data from Core Data")
-                return cachedData.map { entity in
-                    FloatData(entity: entity)
-                }
-            } else {
-                // Download new data
-                guard let response = downloadString(url: url) else {
-                    print("Failed to download data from \(url)")
-                    return []
-                }
+            // Use the correct pattern to match files like N0001_all.txt, P0001_all.txt, etc.
+            let pattern = "^[A-Z]\\d{4}_all\\.txt$"
 
-                print("Downloaded data: \(response.prefix(500))")
+            // Fetch the directory listing and filter filenames using the regex pattern
+            if let fileNames = fetchFileNames(from: baseURL, matching: pattern) {
+                for fileName in fileNames {
+                    let instrumentName = fileName.replacingOccurrences(of: "_all.txt", with: "")
+                    let urlString = "\(baseURL)\(fileName)"
 
-                var dataSet = [FloatData]()
-                let rawRows = splitDataRows(response)
-
-                // Remove old data
-                for object in cachedData {
-                    context.delete(object)
-                }
-
-                for rawData in rawRows {
-                    if FloatData.isValidRaw(rawData) {
-                        if let floatData = FloatData(raw: rawData) {
-                            dataSet.append(floatData)
-
-                            // Save to Core Data
-                            let entity = FloatDataEntity(context: context)
-                            entity.populate(with: floatData)
-                        }
+                    if let url = URL(string: urlString) {
+                        let instrumentData = fetchData(from: url, for: instrumentName)
+                        let instrument = Instrument(name: instrumentName, floatData: instrumentData)
+                        instruments.append(instrument)
+                    } else {
+                        print("Invalid URL: \(urlString)")
                     }
                 }
-
-                // Save the context
-                try context.save()
-                print("Updated data in Core Data")
-
-                return dataSet
             }
-        } catch {
-            print("Error fetching or saving data: \(error)")
-            return []
+
+            return instruments
         }
-    }
+    
+    // Function to fetch and filter filenames based on regex pattern
+       static func fetchFileNames(from baseURL: String, matching pattern: String) -> [String]? {
+           guard let url = URL(string: baseURL) else {
+               print("Invalid base URL")
+               return nil
+           }
 
-    static func splitDataRows(_ rawData: String) -> [[String]] {
-        let lines = rawData.components(separatedBy: .newlines).filter { !$0.isEmpty }
-        var data = [[String]]()
-        for line in lines {
-            let values = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-            data.append(values)
-        }
-        return data
-    }
+           var matchedFiles: [String] = []
 
-    static func downloadString(url: URL) -> String? {
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: String?
+           // Simulate fetching directory listing (replace with actual directory fetching if needed)
+           // For now, this just simulates some filenames for testing
+           let fileNames = [
+               "N0001_all.txt", "N0002_all.txt", "P0006_all.txt", "random_file.txt", "N0003_all.txt", "R0005_all.txt"
+           ]
 
-        let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url) { data, response, error in
-            if let data = data {
-                result = String(data: data, encoding: .utf8)
-            } else if let error = error {
-                print("Error downloading data: \(error.localizedDescription)")
+           let regex = try? NSRegularExpression(pattern: pattern)
+
+           for fileName in fileNames {
+               if let regex = regex, regex.firstMatch(in: fileName, options: [], range: NSRange(location: 0, length: fileName.count)) != nil {
+                   matchedFiles.append(fileName)
+               }
+           }
+
+           print("Matched Files: \(matchedFiles)")
+           return matchedFiles
+       }
+    
+
+    // Fetches data for each file
+        static func fetchData(from url: URL, for deviceName: String) -> [FloatData] {
+            // Get the context
+            let context = PersistenceController.shared.container.viewContext
+
+            // Check if data already exists
+            let fetchRequest: NSFetchRequest<FloatDataEntity> = FloatDataEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "deviceName == %@", deviceName)
+
+            do {
+                let cachedData = try context.fetch(fetchRequest)
+                let shouldRefreshData: Bool
+
+                if let lastData = cachedData.last, let lastDate = lastData.dateTime {
+                    // Determine if data is outdated (e.g., older than 1 day)
+                    let timeSinceLastFetch = Date().timeIntervalSince(lastDate)
+                    shouldRefreshData = timeSinceLastFetch > (24 * 60 * 60) // 1 day
+                } else {
+                    shouldRefreshData = true
+                }
+
+                if !cachedData.isEmpty && !shouldRefreshData {
+                    print("Loaded data from Core Data")
+                    return cachedData.map { entity in
+                        FloatData(entity: entity)
+                    }
+                } else {
+                    // Download new data
+                    guard let response = downloadString(url: url) else {
+                        print("Failed to download data from \(url)")
+                        return []
+                    }
+
+                    print("Downloaded data: \(response.prefix(500))")
+
+                    var dataSet = [FloatData]()
+                    let rawRows = splitDataRows(response)
+
+                    // Remove old data
+                    for object in cachedData {
+                        context.delete(object)
+                    }
+
+                    for rawData in rawRows {
+                        if FloatData.isValidRaw(rawData) {
+                            if let floatData = FloatData(raw: rawData) {
+                                dataSet.append(floatData)
+
+                                // Save to Core Data
+                                let entity = FloatDataEntity(context: context)
+                                entity.populate(with: floatData)
+                            }
+                        }
+                    }
+
+                    // Save the context
+                    try context.save()
+                    print("Updated data in Core Data")
+
+                    return dataSet
+                }
+            } catch {
+                print("Error fetching or saving data: \(error)")
+                return []
             }
-            semaphore.signal()
         }
 
-        task.resume()
-        semaphore.wait()
+    // Helper function to split raw data into rows and values
+       static func splitDataRows(_ rawData: String) -> [[String]] {
+           let lines = rawData.components(separatedBy: .newlines).filter { !$0.isEmpty }
+           var data = [[String]]()
+           for line in lines {
+               let values = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
+               data.append(values)
+           }
+           return data
+       }
 
-        return result
-    }
-}
+       // Helper function to download raw data from URL
+       static func downloadString(url: URL) -> String? {
+           let semaphore = DispatchSemaphore(value: 0)
+           var result: String?
+
+           let session = URLSession(configuration: .default)
+           let task = session.dataTask(with: url) { data, response, error in
+               if let data = data {
+                   result = String(data: data, encoding: .utf8)
+               } else if let error = error {
+                   print("Error downloading data: \(error.localizedDescription)")
+               }
+               semaphore.signal()
+           }
+
+           task.resume()
+           semaphore.wait()
+
+           return result
+       }
+   }
