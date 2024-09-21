@@ -14,7 +14,7 @@ struct IdentifiablePointAnnotation: Identifiable, Equatable {
     let coordinate: CLLocationCoordinate2D
     let title: String?
     let subtitle: String?
-    let dateTime: Date // Ensure this is included for the timeline slider
+    let dateTime: Date
 
     static func == (lhs: IdentifiablePointAnnotation, rhs: IdentifiablePointAnnotation) -> Bool {
         return lhs.id == rhs.id &&
@@ -37,13 +37,13 @@ struct MainView: View {
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0),
-        span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
+        span: MKCoordinateSpan(latitudeDelta: 20.0, longitudeDelta: 20.0) // Medium zoom level
     )
 
     var body: some View {
         ZStack {
+            // Map view with the adjusted region zoom level
             MapView(region: $region, is3D: $is3D, annotations: onMarkers, polylines: polylines, selectedDate: selectedDate, instrument: selectedInstrument)
-
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
                     loadInstruments()
@@ -55,7 +55,67 @@ struct MainView: View {
                 }
 
             VStack {
-                // Timeline Slider
+                HStack {
+                    // Top-left instrument picker dropdown
+                    Menu {
+                        Button("Select All", action: {
+                            // Display the most recent date and location of each instrument
+                            showMostRecentLocationsForAllInstruments()
+                        })
+                        ForEach(instruments, id: \.self) { instrument in
+                            Button(instrument.name) {
+                                selectedInstrument = instrument
+                                setupInstrument(instrument)
+                                updateSelectedDateToLatest()
+                            }
+                        }
+                    } label: {
+                        Label("Show:", systemImage: "chevron.down")
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .cornerRadius(8)
+                    }
+                    .frame(width: 150) // Controls the width of the dropdown
+                    .alignmentGuide(.leading) { d in d[.leading] } // Align to the top-left corner
+
+                    Spacer()
+
+                    // Top-right corner icons: Globe and Redo buttons
+                    HStack(spacing: 10) {
+                        Button(action: {
+                            is3D.toggle()
+                        }) {
+                            Image(systemName: is3D ? "map" : "globe")
+                                .font(.system(size: 20)) // Smaller icon
+                                .padding(8)
+                                .background(Color(.systemBackground).opacity(0.8))
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel(is3D ? "2D View" : "3D View")
+
+                        Button(action: {
+                            if let selectedInstrument = selectedInstrument {
+                                clearOnMarkers()
+                                setupInstrument(selectedInstrument)
+                                updateSelectedDateToLatest()
+                            }
+                        }) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 20)) // Smaller icon
+                                .padding(8)
+                                .background(Color(.systemBackground).opacity(0.8))
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel("Reset View")
+                    }
+                    .alignmentGuide(.trailing) { d in d[.trailing] } // Align to the top-right corner
+                }
+                .padding(.horizontal, 20) // Adjust horizontal padding
+                .padding(.top, 50)        // Adjust top padding for proper positioning
+
+                Spacer()
+
+                // Timeline slider at the bottom of the screen
                 if let selectedInstrument = selectedInstrument {
                     let dates = selectedInstrument.floatData.map { $0.dateTime }
                     if let minDate = dates.min(), let maxDate = dates.max() {
@@ -80,62 +140,9 @@ struct MainView: View {
                                 .background(Color(.systemBackground).opacity(0.8))
                                 .cornerRadius(10)
                         }
-                        .padding(.top, 40)
+                        .padding(.bottom, 40)
                     }
                 }
-
-                Spacer()
-
-                // Instrument Picker
-                if !instruments.isEmpty {
-                    Picker("Select an Instrument", selection: $selectedInstrument) {
-                        ForEach(instruments, id: \.self) { instrument in
-                            Text(instrument.name).tag(instrument as Instrument?)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.horizontal)
-                    .background(Color(.systemBackground).opacity(0.8))
-                    .cornerRadius(10)
-                    .padding(.bottom, 8)
-                    .onChange(of: selectedInstrument) { oldInstrument, newInstrument in
-                        // Use oldInstrument and newInstrument as needed
-                        if let newInstrument = newInstrument {
-                            setupInstrument(newInstrument)
-                            updateSelectedDateToLatest()
-                        }
-                    }
-                }
-
-                // Control Buttons
-                HStack(spacing: 20) {
-                    Button(action: {
-                        if let selectedInstrument = selectedInstrument {
-                            clearOnMarkers()
-                            setupInstrument(selectedInstrument)
-                            updateSelectedDateToLatest()
-                        }
-                    }) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.title)
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .clipShape(Circle())
-                    }
-                    .accessibilityLabel("Reset View")
-
-                    Button(action: {
-                        is3D.toggle()
-                    }) {
-                        Image(systemName: is3D ? "map" : "globe")
-                            .font(.title)
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .clipShape(Circle())
-                    }
-                    .accessibilityLabel(is3D ? "2D View" : "3D View")
-                }
-                .padding(.bottom, 40)
             }
         }
     }
@@ -148,22 +155,18 @@ struct MainView: View {
         }
     }
 
-
     private func setupInstrument(_ instrument: Instrument) {
         clearOnMarkers()
+        polylines.removeAll()  // Clear previous polylines
         updateMarkersForSelectedDate()
     }
 
     private func updateMarkersForSelectedDate() {
         guard let selectedInstrument = selectedInstrument else { return }
 
-        // Filter data points up to the selected date
         let filteredData = selectedInstrument.floatData.filter { $0.dateTime <= selectedDate }
-
-        // Sort data by date (if not already sorted)
         let sortedData = filteredData.sorted { $0.dateTime < $1.dateTime }
 
-        // Map to new annotations
         let newMarkers = sortedData.map { dataPoint in
             IdentifiablePointAnnotation(
                 coordinate: CLLocationCoordinate2D(latitude: dataPoint.latitude, longitude: dataPoint.longitude),
@@ -173,21 +176,19 @@ struct MainView: View {
             )
         }
 
-        // Only update if the markers have changed
         if newMarkers != onMarkers {
             onMarkers = newMarkers
         }
 
-        // Update polylines
         updatePolylines(with: sortedData)
 
-        // Update region only if needed
         if let lastCoord = onMarkers.last?.coordinate {
             if region.center.latitude != lastCoord.latitude || region.center.longitude != lastCoord.longitude {
-                region = MKCoordinateRegion(center: lastCoord, span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0))
+                region = MKCoordinateRegion(center: lastCoord, span: MKCoordinateSpan(latitudeDelta: 20.0, longitudeDelta: 20.0)) // Medium zoom level
             }
         }
     }
+
     private func updatePolylines(with dataPoints: [FloatData]) {
         polylines.removeAll()
 
@@ -201,6 +202,32 @@ struct MainView: View {
         }
     }
 
+    private func showMostRecentLocationsForAllInstruments() {
+        clearOnMarkers()
+        polylines.removeAll()  // Clear previous polylines before showing recent locations
+
+        var mostRecentMarkers: [IdentifiablePointAnnotation] = []
+
+        for instrument in instruments {
+            if let mostRecentData = instrument.floatData.max(by: { $0.dateTime < $1.dateTime }) {
+                let marker = IdentifiablePointAnnotation(
+                    coordinate: CLLocationCoordinate2D(latitude: mostRecentData.latitude, longitude: mostRecentData.longitude),
+                    title: instrument.name,
+                    subtitle: DateFormatter.localizedString(from: mostRecentData.dateTime, dateStyle: .medium, timeStyle: .short),
+                    dateTime: mostRecentData.dateTime
+                )
+                mostRecentMarkers.append(marker)
+            }
+        }
+
+        if mostRecentMarkers != onMarkers {
+            onMarkers = mostRecentMarkers
+        }
+
+        if let lastCoord = mostRecentMarkers.last?.coordinate {
+            region = MKCoordinateRegion(center: lastCoord, span: MKCoordinateSpan(latitudeDelta: 20.0, longitudeDelta: 20.0))
+        }
+    }
 
 
     private func updateSelectedDateToLatest() {

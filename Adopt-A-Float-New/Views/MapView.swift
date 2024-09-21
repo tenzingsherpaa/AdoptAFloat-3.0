@@ -27,19 +27,7 @@ struct MapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let polyline = overlay as? CustomPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
-
-                // Calculate the time difference between the polyline's date and the selected date
-                if let polylineDate = polyline.dateTime, let instrument = parent.instrument {
-                    let timeDifference = parent.selectedDate.timeIntervalSince(polylineDate)
-                    let totalTimeDifference = instrument.floatData.last?.dateTime.timeIntervalSince(instrument.floatData.first?.dateTime ?? Date()) ?? 1
-
-                    // Normalize the time difference to get an alpha value between 0.1 and 1.0
-                    let alpha = CGFloat(1.0 - (timeDifference / totalTimeDifference))
-                    renderer.strokeColor = UIColor.blue.withAlphaComponent(alpha)
-                } else {
-                    renderer.strokeColor = UIColor.blue
-                }
-
+                renderer.strokeColor = UIColor.blue
                 renderer.lineWidth = 2
                 return renderer
             }
@@ -67,6 +55,7 @@ struct MapView: UIViewRepresentable {
            mapView.region.span.longitudeDelta != region.span.longitudeDelta {
             mapView.setRegion(region, animated: true)
         }
+
 
         mapView.mapType = is3D ? .hybridFlyover : .standard
 
