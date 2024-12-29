@@ -1,14 +1,19 @@
 //
-//  FloatDataEntity+Extensions.swift
-//  Adopt-A-Float-New
-//
-//  Created by Tenzing Sherpa on 9/14/24.
-//
-
+ //  FloatDataEntity+Extensions.swift
+ //  Adopt-A-Float-New
+ //
+ //  Created by Tenzing Sherpa on 9/14/24.
+ //
+    
 import Foundation
 import CoreData
 
+// MARK: - FloatDataEntity Extension
+/// Provides additional functionality for the `FloatDataEntity` managed object.
 extension FloatDataEntity {
+    
+    /// Populates the `FloatDataEntity` with data from a `FloatData` instance.
+    /// - Parameter data: The `FloatData` instance containing the data to populate.
     func populate(with data: FloatData) {
         self.deviceName = data.deviceName
         self.dateTime = data.dateTime
@@ -16,13 +21,13 @@ extension FloatDataEntity {
         self.longitude = data.longitude
         self.altitude = data.altitude
         self.verticalSpeed = data.verticalSpeed
-        self.value1 = Int32(data.value1)
-        self.value2 = Int32(data.value2)
-        self.value3 = Int32(data.value3)
-        self.value4 = Int32(data.value4)
-        self.value5 = Int32(data.value5)
-        self.value6 = Int32(data.value6)
-        self.indicator1 = Int32(data.indicator1)
-        self.indicator2 = Int32(data.indicator2)
+        self.batteryLevel = Int32(data.batteryLevel)
+        self.internalPressure = Int32(data.internalPressure)
+        self.externalPressure = Int32(data.externalPressure)
+        self.distanceTravelled = Int32(data.distanceTravelled)
+        self.averageSpeed = Int32(data.averageSpeed)
+        self.netDisplacement = Int32(data.netDisplacement)
+        self.gpsAccuracyHdop = Int32(data.gpsAccuracyHdop)
+        self.gpsAccuracyVdop = Int32(data.gpsAccuracyVdop)
     }
 }

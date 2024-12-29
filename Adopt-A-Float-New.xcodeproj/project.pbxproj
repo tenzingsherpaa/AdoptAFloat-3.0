@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		E42782882C8245AA00EE7857 /* Adopt_A_Float_NewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42782872C8245AA00EE7857 /* Adopt_A_Float_NewApp.swift */; };
 		E427828A2C8245AA00EE7857 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42782892C8245AA00EE7857 /* ContentView.swift */; };
-		E427828C2C8245AA00EE7857 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = E427828B2C8245AA00EE7857 /* Item.swift */; };
 		E427828E2C8245AE00EE7857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E427828D2C8245AE00EE7857 /* Assets.xcassets */; };
 		E42782912C8245AE00EE7857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E42782902C8245AE00EE7857 /* Preview Assets.xcassets */; };
 		E427829B2C8245AF00EE7857 /* Adopt_A_Float_NewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E427829A2C8245AF00EE7857 /* Adopt_A_Float_NewTests.swift */; };
@@ -26,6 +25,9 @@
 		E469D6F42C96751C004883EA /* AdoptAFloatModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E469D6F22C96751C004883EA /* AdoptAFloatModel.xcdatamodeld */; };
 		E469D6F72C967604004883EA /* FloatDataEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = E469D6F52C967604004883EA /* FloatDataEntity+CoreDataClass.swift */; };
 		E469D6F82C967604004883EA /* FloatDataEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = E469D6F62C967604004883EA /* FloatDataEntity+CoreDataProperties.swift */; };
+		E492CA052CBDBD29003F2D65 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E492CA042CBDBD20003F2D65 /* AboutView.swift */; };
+		E492CA072CBDD3B6003F2D65 /* LaunchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E492CA062CBDD3B2003F2D65 /* LaunchView.swift */; };
+		E492CA092CBDDB26003F2D65 /* WaveAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E492CA082CBDDB20003F2D65 /* WaveAnimationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,7 +51,6 @@
 		E42782842C8245AA00EE7857 /* Adopt-A-Float-New.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Adopt-A-Float-New.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E42782872C8245AA00EE7857 /* Adopt_A_Float_NewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Adopt_A_Float_NewApp.swift; sourceTree = "<group>"; };
 		E42782892C8245AA00EE7857 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		E427828B2C8245AA00EE7857 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		E427828D2C8245AE00EE7857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E42782902C8245AE00EE7857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		E42782962C8245AF00EE7857 /* Adopt-A-Float-NewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Adopt-A-Float-NewTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +69,9 @@
 		E469D6F32C96751C004883EA /* AdoptAFloatModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = AdoptAFloatModel.xcdatamodel; sourceTree = "<group>"; };
 		E469D6F52C967604004883EA /* FloatDataEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FloatDataEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		E469D6F62C967604004883EA /* FloatDataEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FloatDataEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		E492CA042CBDBD20003F2D65 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		E492CA062CBDD3B2003F2D65 /* LaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchView.swift; sourceTree = "<group>"; };
+		E492CA082CBDDB20003F2D65 /* WaveAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveAnimationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,7 +126,6 @@
 				E42782B52C82472C00EE7857 /* Models */,
 				E42782872C8245AA00EE7857 /* Adopt_A_Float_NewApp.swift */,
 				E42782892C8245AA00EE7857 /* ContentView.swift */,
-				E427828B2C8245AA00EE7857 /* Item.swift */,
 				E427828D2C8245AE00EE7857 /* Assets.xcassets */,
 				E427828F2C8245AE00EE7857 /* Preview Content */,
 				E42782BF2C824CD100EE7857 /* source.plist */,
@@ -173,6 +176,9 @@
 		E42782BC2C8247D800EE7857 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E492CA082CBDDB20003F2D65 /* WaveAnimationView.swift */,
+				E492CA062CBDD3B2003F2D65 /* LaunchView.swift */,
+				E492CA042CBDBD20003F2D65 /* AboutView.swift */,
 				E42782B32C82468F00EE7857 /* MapView.swift */,
 				E42782BD2C8247EA00EE7857 /* MainView.swift */,
 			);
@@ -243,7 +249,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					E42782832C8245AA00EE7857 = {
 						CreatedOnToolsVersion = 15.4;
@@ -310,14 +316,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E492CA092CBDDB26003F2D65 /* WaveAnimationView.swift in Sources */,
 				E469D6F12C9670F9004883EA /* FloatDataEntity+Extensions.swift in Sources */,
+				E492CA072CBDD3B6003F2D65 /* LaunchView.swift in Sources */,
 				E427828A2C8245AA00EE7857 /* ContentView.swift in Sources */,
 				E469D6EF2C966E5B004883EA /* PersistenceController.swift in Sources */,
 				E42782BE2C8247EA00EE7857 /* MainView.swift in Sources */,
 				E42782B42C82468F00EE7857 /* MapView.swift in Sources */,
-				E427828C2C8245AA00EE7857 /* Item.swift in Sources */,
 				E42782882C8245AA00EE7857 /* Adopt_A_Float_NewApp.swift in Sources */,
 				E469D6F42C96751C004883EA /* AdoptAFloatModel.xcdatamodeld in Sources */,
+				E492CA052CBDBD29003F2D65 /* AboutView.swift in Sources */,
 				E42782B92C82475B00EE7857 /* Instrument.swift in Sources */,
 				E42782B72C82474200EE7857 /* FloatData.swift in Sources */,
 				E469D6F72C967604004883EA /* FloatDataEntity+CoreDataClass.swift in Sources */,
@@ -483,12 +491,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Adopt-A-Float-New/Preview Content\"";
 				DEVELOPMENT_TEAM = 9LPCP4B25M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Adopt-A-Float";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -498,9 +510,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Sherpa.Adopt-A-Float-New";
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "frederik.Adopt-A-Float";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -512,12 +529,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Adopt-A-Float-New/Preview Content\"";
-				DEVELOPMENT_TEAM = 9LPCP4B25M;
+				DEVELOPMENT_TEAM = 9ZSJ3M4Q25;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Adopt-A-Float";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -527,9 +548,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Sherpa.Adopt-A-Float-New";
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "frederik.Adopt-A-Float";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -539,7 +565,6 @@
 		E42782AE2C8245AF00EE7857 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -559,7 +584,6 @@
 		E42782AF2C8245AF00EE7857 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -579,7 +603,6 @@
 		E42782B12C8245AF00EE7857 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9LPCP4B25M;
@@ -597,7 +620,6 @@
 		E42782B22C8245AF00EE7857 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9LPCP4B25M;

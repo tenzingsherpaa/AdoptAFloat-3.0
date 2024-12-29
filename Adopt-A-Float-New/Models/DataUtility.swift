@@ -5,14 +5,17 @@
 //  Created by Tenzing Sherpa on 8/30/24.
 //
 
-// DataUtility.swift
-
 import Foundation
 import CoreData
 
+// MARK: - DataUtility
+/// A utility struct providing methods to fetch and manage instrument data.
 struct DataUtility {
 
-    // Fetch the Base URL from the plist file
+    // MARK: - Base URL Retrieval
+
+    /// Fetches the base URL from the `source.plist` file.
+    /// - Returns: The base URL as a `String` if available, otherwise `nil`.
     static func getBaseURL() -> String? {
         guard let path = Bundle.main.path(forResource: "source", ofType: "plist"),
               let plistDict = NSDictionary(contentsOfFile: path),
@@ -23,7 +26,10 @@ struct DataUtility {
         return baseURL
     }
 
-    // Create instruments by scanning the base URL directory
+    // MARK: - Instrument Creation
+
+    /// Creates an array of `Instrument` by scanning the base URL directory for matching files.
+    /// - Returns: An array of `Instrument` instances.
     static func createInstruments() -> [Instrument] {
         var instruments: [Instrument] = []
 
@@ -32,13 +38,13 @@ struct DataUtility {
             return instruments
         }
 
-        // Use the correct pattern to match files like N0001_all.txt, P0006_all.txt, etc.
-        let pattern = "^[A-Z]\\d{4}_all\\.txt$"
+        // Regex pattern to match filenames like N0001_030.txt, P0006_030.txt, etc.
+        let pattern = "^[A-Z]\\d{4}_030\\.txt$"
 
-        // Fetch the directory listing and filter filenames using the regex pattern
+        // Fetch and filter filenames using the regex pattern
         if let fileNames = fetchFileNames(from: baseURL, matching: pattern) {
             for fileName in fileNames {
-                let instrumentName = fileName.replacingOccurrences(of: "_all.txt", with: "")
+                let instrumentName = fileName.replacingOccurrences(of: "_030.txt", with: "")
                 let urlString = "\(baseURL)\(fileName)"
 
                 if let url = URL(string: urlString) {
@@ -54,7 +60,13 @@ struct DataUtility {
         return instruments
     }
 
-    // Fetch filenames based on regex pattern from the directory
+    // MARK: - File Name Fetching
+
+    /// Fetches filenames from the base URL that match the given regex pattern.
+    /// - Parameters:
+    ///   - baseURL: The base URL string.
+    ///   - pattern: The regex pattern to match filenames.
+    /// - Returns: An array of matching filenames if successful, otherwise `nil`.
     static func fetchFileNames(from baseURL: String, matching pattern: String) -> [String]? {
         guard let url = URL(string: baseURL) else {
             print("Invalid base URL")
@@ -63,57 +75,54 @@ struct DataUtility {
 
         var matchedFiles: [String] = []
 
-        // Fetch directory listing from the server
         guard let directoryHTML = downloadString(url: url) else {
             print("Failed to download directory listing")
             return nil
         }
 
-        // Extract file names from the HTML (assuming links with href)
         let fileNames = extractFileNames(from: directoryHTML)
-
         let regex = try? NSRegularExpression(pattern: pattern)
 
         for fileName in fileNames {
-            if let regex = regex, regex.firstMatch(in: fileName, options: [], range: NSRange(location: 0, length: fileName.count)) != nil {
+            if let regex = regex, regex.firstMatch(in: fileName, options: [], range: NSRange(location: 0, length: fileName.utf16.count)) != nil {
                 matchedFiles.append(fileName)
             }
         }
-
-        print("Matched Files: \(matchedFiles)")
         return matchedFiles
     }
 
-    // Function to extract filenames from an HTML string (assuming links with href)
+    // MARK: - File Name Extraction
+
+    /// Extracts filenames ending with `.txt` from the provided HTML string.
+    /// - Parameter html: The HTML content as a `String`.
+    /// - Returns: An array of `.txt` filenames.
     static func extractFileNames(from html: String) -> [String] {
         var fileNames: [String] = []
-        
-        // Simple regex to find href attributes with filenames
         let pattern = "href=\"([^\"]+)\""
         let regex = try? NSRegularExpression(pattern: pattern)
-
         let nsRange = NSRange(html.startIndex..<html.endIndex, in: html)
         regex?.enumerateMatches(in: html, options: [], range: nsRange) { match, _, _ in
             if let matchRange = match?.range(at: 1),
                let swiftRange = Range(matchRange, in: html) {
                 let fileName = String(html[swiftRange])
-                
-                // Filter out unwanted paths (e.g., directories, parent folder links)
                 if fileName.hasSuffix(".txt") {
                     fileNames.append(fileName)
                 }
             }
         }
-        
         return fileNames
     }
 
-    // Fetch the data for each instrument from the given URL
+    // MARK: - Data Fetching
+
+    /// Fetches float data for a specific instrument from Core Data or downloads it if outdated.
+    /// - Parameters:
+    ///   - url: The URL to fetch data from.
+    ///   - deviceName: The name of the device (instrument).
+    /// - Returns: An array of `FloatData` instances.
     static func fetchData(from url: URL, for deviceName: String) -> [FloatData] {
-        // Get the context
         let context = PersistenceController.shared.container.viewContext
 
-        // Check if data already exists
         let fetchRequest: NSFetchRequest<FloatDataEntity> = FloatDataEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "deviceName == %@", deviceName)
 
@@ -122,20 +131,17 @@ struct DataUtility {
             let shouldRefreshData: Bool
 
             if let lastData = cachedData.last, let lastDate = lastData.dateTime {
-                // Determine if data is outdated (e.g., older than 1 day)
                 let timeSinceLastFetch = Date().timeIntervalSince(lastDate)
                 shouldRefreshData = timeSinceLastFetch > (24 * 60 * 60) // 1 day
             } else {
                 shouldRefreshData = true
             }
 
+            // Use cached data if it's recent
             if !cachedData.isEmpty && !shouldRefreshData {
                 print("Loaded data from Core Data")
-                return cachedData.map { entity in
-                    FloatData(entity: entity)
-                }
+                return cachedData.map { FloatData(entity: $0) }
             } else {
-                // Download new data
                 guard let response = downloadString(url: url) else {
                     print("Failed to download data from \(url)")
                     return []
@@ -144,24 +150,20 @@ struct DataUtility {
                 var dataSet = [FloatData]()
                 let rawRows = splitDataRows(response)
 
-                // Remove old data
+                // Delete old cached data
                 for object in cachedData {
                     context.delete(object)
                 }
 
+                // Parse and save new data
                 for rawData in rawRows {
-                    if FloatData.isValidRaw(rawData) {
-                        if let floatData = FloatData(raw: rawData) {
-                            dataSet.append(floatData)
-
-                            // Save to Core Data
-                            let entity = FloatDataEntity(context: context)
-                            entity.populate(with: floatData)
-                        }
+                    if FloatData.isValidRaw(rawData), let floatData = FloatData(raw: rawData) {
+                        dataSet.append(floatData)
+                        let entity = FloatDataEntity(context: context)
+                        entity.populate(with: floatData)
                     }
                 }
 
-                // Save the context
                 try context.save()
                 return dataSet
             }
@@ -171,7 +173,11 @@ struct DataUtility {
         }
     }
 
-    // Helper function to split raw data into rows and values
+    // MARK: - Data Parsing
+
+    /// Splits raw data string into rows and columns.
+    /// - Parameter rawData: The raw data as a single `String`.
+    /// - Returns: A two-dimensional array representing rows and their respective columns.
     static func splitDataRows(_ rawData: String) -> [[String]] {
         let lines = rawData.components(separatedBy: .newlines).filter { !$0.isEmpty }
         var data = [[String]]()
@@ -182,13 +188,17 @@ struct DataUtility {
         return data
     }
 
-    // Helper function to download raw data from URL
+    // MARK: - Data Downloading
+
+    /// Downloads the content of a URL as a `String`.
+    /// - Parameter url: The URL to download data from.
+    /// - Returns: The downloaded content as a `String` if successful, otherwise `nil`.
     static func downloadString(url: URL) -> String? {
         let semaphore = DispatchSemaphore(value: 0)
         var result: String?
 
         let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: url) { data, response, error in
+        let task = session.dataTask(with: url) { data, _, error in
             if let data = data {
                 result = String(data: data, encoding: .utf8)
             } else if let error = error {

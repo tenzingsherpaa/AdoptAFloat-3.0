@@ -1,151 +1,210 @@
 //
-//  ContentView.swift
-//  Adopt-A-Float-New
-//
-//  Created by Tenzing Sherpa on 8/30/24.
-//
-
+ //  ContentView.swift
+ //  Adopt-A-Float-New
+ //
+ //  Created by Tenzing Sherpa on 8/30/24.
+ //
+ 
 import SwiftUI
 
+// MARK: - ContentView
+/// The main view of the Adopt-A-Float-New application, handling the launch screen, main navigation, and user interactions.
 struct ContentView: View {
-    @State private var isLoading = false
-    @State private var downloadProgress: CGFloat = 0.0
-    @State private var dataDownloaded = false
-    @State private var showMainView = false  // State for showing MainView
+    // MARK: - State Variables
     
-    var body: some View {
-        ZStack {
-            // Updated Ocean Background
-            OceanBackground()
-                .edgesIgnoringSafeArea(.all)
-            
-            VStack(spacing: 40) {
-                // Buoy Logo at the top
-                Spacer()
-                Image("buoyLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150, height: 150)
-                    .padding(.top, 80)
-                
-                // Loading progress bar if downloading
-                if isLoading {
-                    ProgressBar(progress: downloadProgress)
-                        .frame(height: 10)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 20)
-                }
+    /// Controls the visibility of the launch screen.
+    @State private var showLaunchScreen = true
+    
+    /// Controls the visibility of the main view.
+    @State private var showMainView = false
+    
+    /// Holds the currently selected instrument.
+    @State private var selectedInstrument: Instrument?
+    
+    /// Indicates whether all instruments are selected.
+    @State private var isAllInstrumentsSelected = false
+    
+    /// Controls the visibility of the loading pop-up.
+    @State private var showLoadingPopup = false
 
-                // Track Buoys button, disabled if still downloading
-                Button(action: {
-                    if dataDownloaded {
-                        showMainView = true
+    // MARK: - Body
+    var body: some View {
+        // Conditional rendering based on the state of showLaunchScreen
+        if showLaunchScreen {
+            // Display the launch screen with a fade-in transition
+            LaunchView()
+                .transition(.opacity)
+                .onAppear {
+                    // After 3 seconds, hide the launch screen with animation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        withAnimation {
+                            showLaunchScreen = false
+                        }
                     }
-                }) {
-                    Text("Track Buoys")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(dataDownloaded ? Color.white : Color.gray.opacity(0.5))
-                        .foregroundColor(.blue)
-                        .cornerRadius(10)
-                        .shadow(radius: 10)
                 }
-                .padding(.horizontal, 40)
-                .disabled(!dataDownloaded)  // Disable until data is downloaded
-                
-                Spacer()
-            }
-            
-            // Present MainView when the button is clicked
+        } else {
+            // If not showing the launch screen, decide between showing MainView or the initial navigation view
             if showMainView {
-                MainView()
-                    .transition(.move(edge: .bottom))
+                // Display the MainView with bindings to selectedInstrument, isAllInstrumentsSelected, and showMainView
+                MainView(
+                    selectedInstrument: $selectedInstrument,
+                    isAllInstrumentsSelected: $isAllInstrumentsSelected,
+                    showMainView: $showMainView
+                )
+                .transition(.move(edge: .bottom)) // Transition animation from the bottom
+            } else {
+                // Initial navigation view with ocean-themed background and navigation options
+                NavigationView {
+                    ZStack {
+                        // Custom ocean-themed background
+                        OceanBackground()
+                            .edgesIgnoringSafeArea(.all)
+                        
+                        VStack(spacing: 40) {
+                            Spacer()
+                            
+                            // App Name with custom font and shadow for visual appeal
+                            Text("Adopt-A-Float")
+                                .font(.custom("AvenirNext-Bold", size: 32))  // Ensure "AvenirNext-Bold" is added to your project fonts
+                                .foregroundColor(.white)
+                                .shadow(radius: 5)
+                            
+                            // Buoy launch screen image
+                            Image("buoylaunchscreen") // Ensure "buoylaunchscreen" image is added to your asset catalog
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .padding(.vertical, 20)
+                            
+                            // Stack containing "Track Buoys" and "About" buttons
+                            VStack(spacing: 20) {
+                                // "Track Buoys" Button
+                                Button(action: {
+                                    // Trigger navigation to the main view with animation
+                                    withAnimation {
+                                        showMainView = true
+                                    }
+                                }) {
+                                    Text("Track Buoys")
+                                        .font(.headline)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.white)
+                                        .foregroundColor(.blue)
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
+                                }
+                                .padding(.horizontal, 40)
+                                .onLongPressGesture(minimumDuration: 3.0) {
+                                    // Show the loading pop-up when the button is pressed for 3 seconds
+                                    showLoadingPopup = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        // Simulate loading time and then navigate to the main view
+                                        withAnimation {
+                                            showMainView = true
+                                            showLoadingPopup = false
+                                        }
+                                    }
+                                }
+
+                                // "About" Navigation Link
+                                NavigationLink(destination: AboutView()) {
+                                    Text("About")
+                                        .font(.headline)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.white)
+                                        .foregroundColor(.blue)
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
+                                }
+                                .padding(.horizontal, 40)
+                            }
+                            
+                            Spacer()
+                            
+                            // Custom wave animation at the bottom of the screen
+                            WaveAnimationView()
+                                .frame(height: 150) // Ensure WaveAnimationView is defined elsewhere in your project
+                        }
+
+                        // Overlay for the loading pop-up
+                        if showLoadingPopup {
+                            LoadingPopupView()
+                        }
+                    }
+                    .navigationBarHidden(true) // Hide the navigation bar for a cleaner look
+                }
             }
         }
-        .onAppear(perform: startDownload)  // Automatically start downloading when view appears
     }
-
-    // Simulate the download process
-    private func startDownload() {
-        isLoading = true
-        dataDownloaded = false
-        downloadProgress = 0.0
-        
-        // Simulate download by incrementing progress
-        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { timer in
-            downloadProgress += 0.1
-            if downloadProgress >= 1.0 {
-                isLoading = false
-                dataDownloaded = true
-                timer.invalidate()
-            }
-        }
-    }
-}
-
-
-// Custom progress bar view
-struct ProgressBar: View {
-    var progress: CGFloat
     
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Rectangle()
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .opacity(0.3)
-                    .foregroundColor(Color.gray)
+    // MARK: - LoadingPopupView
+    /// A pop-up view that displays a loading message with a progress spinner.
+    struct LoadingPopupView: View {
+        var body: some View {
+            VStack(spacing: 20) {
+                Text("Loading Map...")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 10)
                 
-                Rectangle()
-                    .frame(width: min(geometry.size.width * progress, geometry.size.width), height: geometry.size.height)
-                    .foregroundColor(Color.blue)
-                    .animation(.linear(duration: 0.2))
+                ProgressView()  // Circular loading spinner
+                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    .scaleEffect(1.5) // Increase the size of the spinner
             }
-            .cornerRadius(45.0)
+            .padding(30)
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(radius: 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.black.opacity(0.4))  // Dim the background behind the pop-up
+            .edgesIgnoringSafeArea(.all) // Extend the pop-up to cover the entire screen
         }
     }
-}
-
-// Custom ocean background with gradient and horizon effect
-struct OceanBackground: View {
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Sky gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.blue.opacity(0.3)]),
-                    startPoint: .top,
-                    endPoint: .center
-                )
-                
-                // Ocean gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.7), Color.blue.opacity(0.4)]),
-                    startPoint: .center,
-                    endPoint: .bottom
-                )
-                
-                // Gentle ocean waves using blur for a subtle effect
-                Ellipse()
-                    .fill(Color.white.opacity(0.3))
-                    .frame(width: geometry.size.width * 1.5, height: 100)
-                    .offset(x: -geometry.size.width * 0.3, y: geometry.size.height * 0.65)
-                    .blur(radius: 10)
-                
-                Ellipse()
-                    .fill(Color.white.opacity(0.15))
-                    .frame(width: geometry.size.width * 1.2, height: 80)
-                    .offset(x: geometry.size.width * 0.2, y: geometry.size.height * 0.7)
-                    .blur(radius: 20)
+    
+    // MARK: - OceanBackground
+    /// A custom background view that simulates an ocean with gradients and wave effects.
+    struct OceanBackground: View {
+        var body: some View {
+            GeometryReader { geometry in
+                ZStack {
+                    // Sky gradient transitioning from light to darker blue
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue.opacity(0.6), Color.blue.opacity(0.3)]),
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                    
+                    // Ocean gradient transitioning from deep blue to lighter shades
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.7), Color.blue.opacity(0.4)]),
+                        startPoint: .center,
+                        endPoint: .bottom
+                    )
+                    
+                    // First wave layer with a blur effect for subtlety
+                    Ellipse()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(width: geometry.size.width * 1.5, height: 100)
+                        .offset(x: -geometry.size.width * 0.3, y: geometry.size.height * 0.65)
+                        .blur(radius: 10)
+                    
+                    // Second wave layer with a stronger blur effect
+                    Ellipse()
+                        .fill(Color.white.opacity(0.15))
+                        .frame(width: geometry.size.width * 1.2, height: 80)
+                        .offset(x: geometry.size.width * 0.2, y: geometry.size.height * 0.7)
+                        .blur(radius: 20)
+                }
             }
         }
     }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
+    
+    // MARK: - Previews
+    struct ContentView_Previews: PreviewProvider {
+        static var previews: some View {
+            ContentView()
+        }
     }
 }
